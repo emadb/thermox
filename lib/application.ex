@@ -10,12 +10,17 @@ defmodule Thermox.Application do
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Thermox.Api.Router, options: [port: port]},
-      Thermox.Repo
+      Thermox.Repo,
+      {Registry, [keys: :unique, name: Thermox.Rooms.Registry]},
+      {Thermox.Rooms.Gateway, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Thermox.Supervisor]
-    Supervisor.start_link(children, opts)
+    res = Supervisor.start_link(children, opts)
+
+    Thermox.Rooms.Gateway.start_all_room_monitors()
+    res
   end
 end
