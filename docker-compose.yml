@@ -1,0 +1,13 @@
+version: "3"
+services:
+  db:
+    image: "postgres:12"
+    container_name: "thermox_db"
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=thermox_dev
+    volumes:
+      - /var/lib/postgresql/data
