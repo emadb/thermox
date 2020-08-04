@@ -4,13 +4,14 @@ defmodule Thermox.Rooms.Server do
   alias Thermox.Rooms.Repo
 
   @polling_interval 1000 * 10
+  @epsilon 0.5
 
   def start_link([id] = args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(id))
   end
 
   def init([id]) do
-    {:ok, %{room_id: id, current_temp: "NA"}, {:continue, :setup}}
+    {:ok, %{room_id: id, current_temp: "NA", last_notified_temp: 0}, {:continue, :setup}}
   end
 
   def current_temp(id) do
@@ -26,7 +27,14 @@ defmodule Thermox.Rooms.Server do
     temp = get_temperature(state.room_id)
     Repo.insert(state.room_id, temp)
     Process.send_after(self(), :read_room_temperature, @polling_interval)
-    {:noreply, %{state | current_temp: temp}}
+
+    case has_changed(state.last_notified_temp, temp) do
+      true ->
+        Thermox.Broker.publish({:temperature_changed, %{room_id: state.room_id, temp: temp}})
+        {:noreply, %{state | current_temp: temp, last_notified_temp: temp}}
+      _ ->
+        {:noreply, %{state | current_temp: temp}}
+    end
   end
 
   def handle_call(:current_temp, _from, state) do
@@ -39,5 +47,9 @@ defmodule Thermox.Rooms.Server do
 
   defp get_temperature(_id) do
     Enum.random(0..1000)
+  end
+
+  defp has_changed(last_temp, current_temp) do
+    abs(last_temp - current_temp) > @epsilon
   end
 end

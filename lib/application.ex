@@ -12,15 +12,17 @@ defmodule Thermox.Application do
       {Plug.Cowboy, scheme: :http, plug: Thermox.Api.Router, options: [port: port]},
       Thermox.Repo,
       {Registry, [keys: :unique, name: Thermox.Rooms.Registry]},
-      {Thermox.Rooms.Gateway, []}
+      {Registry, [keys: :unique, name: Thermox.Calendars.Registry]},
+      {Registry, [keys: :unique, name: Thermox.Controllers.Registry]},
+      {Registry, [keys: :duplicate, name: Thermox.PubSub.Registry]},
+      {Thermox.ProcessManager, []},
+      {Thermox.RoomsSupervisor, []}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Thermox.Supervisor]
     res = Supervisor.start_link(children, opts)
 
-    Thermox.Rooms.Gateway.start_all_room_monitors()
+    Thermox.RoomsSupervisor.start_all_room_supervisors()
     res
   end
 end
