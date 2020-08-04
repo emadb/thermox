@@ -16,12 +16,11 @@ defmodule Thermox.RoomsSupervisor do
   end
 
   def start_room(room_id) do
-    # Thermox.SingleRoomSupervisor.start_link(id)
     opts = [strategy: :one_for_all, name: Thermox.SingleRoomSupervisor]
     children = [
-      {Thermox.Rooms.Server, [[room_id]]},
-      {Thermox.Calendars.Server, [[room_id]]},
-      {Thermox.Controllers.Server, [[room_id]]},
+      {Thermox.Rooms.Server, [room_id]},
+      {Thermox.Calendars.Server, [room_id]},
+      {Thermox.Controllers.Server, [room_id]},
     ]
     Supervisor.start_link(children, opts)
   end
