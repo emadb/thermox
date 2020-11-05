@@ -14,15 +14,15 @@ defmodule Thermox.Controllers.Server do
   end
 
   def init([id]) do
-    {:ok, %{room_id: id}}
+    {:ok, %{room_id: id, status: :off}}
   end
 
   def handle_call(:switch_on, _from, state) do
-    {:reply, :ok, state}
+    {:reply, :ok, %{ state | status: :on }}
   end
 
   def handle_call(:switch_off, _from, state) do
-    {:reply, :ok, state}
+    {:reply, :ok, %{ state | status: :off }}
   end
 
   defp via_tuple(id) do

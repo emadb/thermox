@@ -9,6 +9,7 @@ defmodule Thermox.Rooms.Repo do
   def insert(room_id, temp) do
     t = %Temperature{
       room_id: room_id,
+      date: DateTime.utc_now(),
       value: temp / 10
     }
 
